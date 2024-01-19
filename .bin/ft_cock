@@ -1,0 +1,101 @@
+#!/bin/bash
+
+VLC_PID=""
+
+VIDEO_FILE=$HOME/sgoinfre/spin/
+
+_main()
+{
+	ft_lock
+	_wait_for_ft_lock
+	vlc $VIDEO_FILE --no-video-title-show --fullscreen --random --no-audio -R &
+    VLC_PID=$!
+	local vlc_win=$(_wait_for_window_id_from_pid "$VLC_PID")
+	_bring_window_to_top "$vlc_win"
+	_move_window "$vlc_win" "600" "140"
+	_resize_window "$vlc_win" "800" "800"
+	_wait_for_ft_lock_end
+}
+
+_wait_for_ft_lock()
+{
+	# TODO Check if it is the right process and not an other window named ft_lock
+	until (xwininfo -name ft_lock 2> /dev/null | grep "IsViewable" > /dev/null 2>&1) ; do
+		true
+	done
+}
+
+_bring_window_to_top()
+{
+	if [ $# -lt 1 ]; then
+		echo "Usage: $0 <window_id>" >&2
+		exit 1
+	fi
+	local window_id=$1
+	xdotool set_window --overrideredirect 1 $window_id
+	xdotool windowunmap --sync $window_id
+	xdotool windowmap --sync $window_id
+	xdotool windowraise $window_id
+}
+
+_wait_for_window_id_from_pid()
+{
+	if [ $# -lt 1 ]; then
+		echo "Usage: $0 <pid>" >&2
+		exit 1
+	fi
+	local pid=$1
+	local viewable_success=1
+	while [[ $viewable_success -ne 0 ]]; do
+		local win_id=$(wmctrl -l -p | awk "{if (\$3 == $pid) print \$1"})
+		xwininfo -id $win_id 2> /dev/null | grep "IsViewable" > /dev/null 2>&1
+		local viewable_success=$?
+	done
+	echo $win_id
+}
+
+_wait_for_ft_lock_end()
+{
+	LAST_SECOND=$SECONDS
+	while (xwininfo -name ft_lock > /dev/null 2>&1) ; do
+		if [[ $LAST_SECOND -ne $SECONDS ]]; then
+			xdotool click 1
+			LAST_SECOND=$SECONDS
+		fi
+		sleep .1
+	done
+
+	# Close VLC using kill if the PID is set
+    if [ -n "$VLC_PID" ]; then
+        kill $VLC_PID
+    fi
+}
+
+# Args: <window_id> <x> <y>
+_move_window()
+{
+	if [ $# -lt 3 ]; then
+		echo "Usage: $0 <window_id> <x> <y>" >&2
+		exit 1
+	fi
+	local window_id="$1"
+	local x="$2"
+	local y="$3"
+	sleep 1
+	xdotool windowmove --sync "$window_id" "$x" "$y"
+}
+
+# Args: <window_id> <width> <height>
+_resize_window()
+{
+	if [ $# -lt 3 ]; then
+		echo "Usage: $0 <window_id> <width> <height>" >&2
+		exit 1
+	fi
+	local window_id="$1"
+	local width="$2"
+	local height="$3"
+	xdotool windowsize --sync "$window_id" "$width" "$height"
+}
+
+_main "$@"; exit
