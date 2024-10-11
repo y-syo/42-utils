@@ -1,6 +1,0 @@
-while xsetroot -name "$(date +'%A %d %B | %H : %M')"; do
-	sleep 1
-done &
-dwm &
-paperview ~/Pictures/Wallpapers 1 &
-setxkbmap us -variant alt-intl
