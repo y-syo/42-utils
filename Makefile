@@ -6,11 +6,11 @@
 #    By: mmoussou <mmoussou@student.42angouleme.fr  +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2024/01/22 07:21:18 by mmoussou          #+#    #+#              #
-#    Updated: 2024/11/11 12:58:01 by mmoussou         ###   ########.fr        #
+#    Updated: 2024/11/11 12:58:59 by mmoussou         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
-NAME = test
+NAME = 
 
 SRCS = 
 
